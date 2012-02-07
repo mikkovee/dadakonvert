@@ -43,10 +43,8 @@ end
 
 # parsi on tuu fi weppisivun arvoista p‰iv‰keskiaorvot
 # suoltaa kantaan sarakkeeseen col
-def daily_avg(doc, col)
+def daily_avg(doc, col, since=" ")
   doc.css("tr").first.remove
-  last = $db.execute( "select max(date) from dada" )[0][0]
-  $log.debug "last in db "+ last+ "\n"
 
   first = doc.css("tr").first.css("td").first.content
   sum = 0
@@ -56,7 +54,7 @@ def daily_avg(doc, col)
   #laske keskiarvo, lis‰‰/p‰ivit‰ tietokantaan t‰h
   doc.css("tr").each { |row| 
     current = row.css("td").first.content
-    $log.debug "first "+ first+" current "+current+" last "+ last+"\n"
+    $log.debug "first "+ first+" current "+current+" last "+ since+"\n"
     if first == current
       sum += row.css("td")[2].content.to_i
       num += 1
@@ -76,47 +74,58 @@ def daily_avg(doc, col)
     
 
     end
-    $log.debug "current "+ current+ " last "+ last+ "\n"
-    break row if last == current
+    $log.debug "current "+ current+ " last "+ since+ "\n"
+    break row if since == current
   }
 end
 
 
 # parsi on tuu fi weppisivun arvoista p‰iv‰summat kilowateille
 # suoltaa kantaan sarakkeeseen col
-def daily_sum(doc, col)
+def daily_sum(doc, col, since=" ")
   doc.css("tr").first.remove
-  last = $db.execute( "select max(date) from dada" )[0][0]
-  $log.debug "last in db "+ last+ "\n"
 
-  first = doc.css("tr").first.css("td").first.content
+  first_date = doc.css("tr").first.css("td").first.content
   sum = 0
-  $log.debug "first from web "+ first+ "\n"
+  $log.debug "first from web "+ first_date + "\n"
   first_data = doc.css("tr").first.css("td")[2].content.to_i
 
   #laske summa, lis‰‰/p‰ivit‰ tietokantaan t‰h
   doc.css("tr").each { |row| 
-    current = row.css("td").first.content
-    #$log.debug "first "+ first+" current "+current+" last "+ last+"\n"
-    if first != current
+    #print row.to_s + "\n"
+    current_date = row.css("td").first.content
+    #$log.debug "first "+ first_data+" current "+current_data+" last "+ since+"\n"
+    if first_date != current_date
       current_data =  row.css("td")[2].content.to_i
       total = first_data - current_data
+      print "total = " + total.to_s + " first " + first_data.to_s + " current " + current_data.to_s +  "\n"
       first_data = current_data
-      $log.debug "daily for "+ current+ " "+ total+ "\n"
-      update_db(first, col, total)
+      #$log.debug "daily for "+ current+ " "+ total+ "\n"
+      update_db(first_date, col, total)
   
-      first = row.css("td").first.content
+      first_date = row.css("td").first.content
       #$log.debug "avg: "+avg+" "+ current+ "\n"
     
 
     end
-    #$log.debug "current "+ current+ " last "+ last+ "\n"
-    break row if last == current
+    #$log.debug "current "+ current+ " last "+ since+ "\n"
+    break row if since == current_date
   }
 end
 
-daily_avg(ulko, "temp_out")
-daily_avg(sisa, "temp_in")
-daily_sum(kwh, "kwh")
+#this is the main 
+
+last = " "
+if ARGV[0] == "all"
+  last = " "
+  $log.debug("update all")
+else
+  last = $db.execute( "select max(date) from dada" )[0][0]
+  $log.debug "Update data since " + last 
+end
+
+daily_avg(ulko, "temp_out", last)
+daily_avg(sisa, "temp_in", last)
+daily_sum(kwh, "kwh", last)
 
 $db.close()
