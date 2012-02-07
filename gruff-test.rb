@@ -12,9 +12,11 @@ def unnil(value)
   return value.to_i
 end
 
+days = 7
+
 $db = SQLite3::Database.open( "test.db" )
 
-res = $db.execute("select * from dada where temp_in is not null and date > date('now','-7 days') order by date")
+res = $db.execute("select * from dada where temp_in is not null and date > date('now','-" + days.to_s + " days') order by date")
 
 labels = []
 sisa = []
@@ -31,7 +33,7 @@ watit.push(unnil(row[3]))
 g = Gruff::Line.new
 
 
-g.title = labels[0].to_s + " - " + labels[6].to_s 
+g.title = labels[0].to_s + " - " + labels[days.to_i - 1].to_s 
 
 g.data("Sisa", sisa)
 g.data("Ulko", ulko)
