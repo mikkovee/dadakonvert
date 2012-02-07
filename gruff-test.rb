@@ -29,7 +29,7 @@ watit.push(unnil(row[3]))
 }
 
 g = Gruff::Line.new
-g.y_axis_increment = 10
+
 
 g.title = labels[0].to_s + " - " + labels[6].to_s 
 
@@ -37,6 +37,11 @@ g.data("Sisa", sisa)
 g.data("Ulko", ulko)
 g.data("Watit", watit)
 
+g.y_axis_increment = 10
+g.minimum_value = -20
+g.maximum_value = 60
+
+g.hide_values = false
 
 key = 0
 labels.each{ |label|
@@ -46,7 +51,6 @@ labels.each{ |label|
   key += 1
 } 
 
-g.minimum_value = -20
-g.maximum_value = 60
+
 
 g.write('my_fruity_graph.png')
