@@ -12,7 +12,12 @@ def unnil(value)
   return value.to_i
 end
 
+
 days = 7
+if ARGV[0] == "--days" and ARGV[1] 
+  days = ARGV[1].to_i
+end
+
 
 $db = SQLite3::Database.open( "test.db" )
 
@@ -47,7 +52,7 @@ g.hide_values = false
 
 key = 0
 labels.each{ |label|
-  if key.modulo(2) == 0
+  if key.modulo(days/3) == 0
     g.labels[key] = label
   end 
   key += 1
